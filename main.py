@@ -5,14 +5,15 @@ libraries
 import cv2
 import numpy as np
 
-def nothing():
+def nothing(x):
     pass
 
 def trackbars(startVal = 125):
     cv2.namedWindow("Trackbars")
     cv2.resizeWindow("Trackbars", 360, 240)
-    cv2.createTrackbar("Threshold1", "Trackbars", startVal, 255, nothing)
 
+    cv2.createTrackbar("Threshold1", "Trackbars", startVal, 255, nothing)
+    cv2.createTrackbar("Threshold2", "Trackbars", startVal, 255, nothing)
 
 ########################################################################
 webCamFeed = False  # set to false if no webcam available
@@ -49,7 +50,7 @@ while True:
     
     imgContours = img.copy()
     contours, hierarchy = cv2.findContours(imgThreshold, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cv2.drawContours(imgThreshold, contours, -1, (255, 0, 0)), 2
+    cv2.drawContours(imgThreshold, contours, -1, (255, 0, 0), 2)
 
     cv2.imshow("1. Original", img)
     cv2.imshow("2. Grayscale", imgGray)
@@ -66,7 +67,7 @@ while True:
     if cv2.waitKey(1) & 0XFF == ord('x'):
         break  # exit infinite loop
 
-     # SAVE IMAGE WHEN 's' key is pressed
+    # SAVE IMAGE WHEN 's' key is pressed
     if cv2.waitKey(1) & 0xFF == ord('s'):
         print("saving")
         # save image to folder using cv2.imwrite()
