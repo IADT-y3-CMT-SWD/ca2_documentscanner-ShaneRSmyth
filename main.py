@@ -5,6 +5,14 @@ libraries
 import cv2
 import numpy as np
 
+def nothing():
+    pass
+
+def trackbars(startVal = 125):
+    cv2.namedWindow("Trackbars")
+    cv2.resizeWindow("Trackbars", 360, 240)
+    cv2.createTrackbar("Threshold1", "Trackbars", startVal, 255, nothing)
+
 
 ########################################################################
 webCamFeed = False  # set to false if no webcam available
@@ -16,6 +24,7 @@ heightImg = 480
 widthImg = 640
 ########################################################################
 
+trackbars()
 count = 0
 
 while True:
@@ -24,6 +33,7 @@ while True:
         success, img = cap.read()
     else:
         img = cv2.imread(pathImage)
+
     # RESIZE IMAGE
     img = cv2.resize(img, (heightImg, widthImg))
     # CREATE A BLANK IMAGE FOR TESTING DEBUGING IF REQUIRED
@@ -36,6 +46,10 @@ while True:
     kernel = np.ones((5, 5))
     imgDial = cv2.dilate(imgCanny, kernel, iterations=2)  # APPLY DILATION
     imgThreshold = cv2.erode(imgDial, kernel, iterations=1)  # APPLY EROSION
+    
+    imgContours = img.copy()
+    contours, hierarchy = cv2.findContours(imgThreshold, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cv2.drawContours(imgThreshold, contours, -1, (255, 0, 0)), 2
 
     cv2.imshow("1. Original", img)
     cv2.imshow("2. Grayscale", imgGray)
@@ -43,9 +57,10 @@ while True:
     cv2.imshow("4. Canny", imgCanny)
     cv2.imshow("5. Dilate", imgDial)
     cv2.imshow("6. Treshold", imgThreshold)
-    #cv2.imshow("7. imgContours", imgContours)
+    cv2.imshow("7. imgContours", imgContours)
 
     imgOutput = imgCanny
+
     # Press x  on keyboard to  exit
     # Close and break the loop after pressing "x" key
     if cv2.waitKey(1) & 0XFF == ord('x'):
