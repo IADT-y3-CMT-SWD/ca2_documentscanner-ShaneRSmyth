@@ -23,6 +23,49 @@ def value_trackbars():
     src = threshold1, threshold2
     return src
 
+#find biggest countour
+def biggestContour(contours):
+    biggest = np.array([])
+    max_area = 0
+    #loop through countours list
+    for i in contours:
+        area = cv2.contourArea(i)
+        #discard areas below treshold
+        if area > 5000:
+            #calculates a contour perimeter -> float
+            peri = cv2.arcLength(i, True)
+            #calcualtes a curve or a polygon with another curve/polygon with less vertices
+            approx = cv2.approxPolyDP(i, 0.02 * peri, True)
+            # print(f'Area: {area}, Peri: {peri}, Approx: {approx}')
+            # is it a rectangle?
+            if area > max_area and len(approx) == 4:
+                biggest = approx
+                #overwrite max_area for regions that are lareger
+                max_area = area
+    return biggest, max_area
+
+#reordering points in order to warp image
+def reorder(myPoints):
+    myPoints = myPoints.reshape((4, 2))
+    myPointsNew = np.zeros((4, 1, 2), dtype=np.int32)
+    add = myPoints.sum(1)
+ 
+    myPointsNew[0] = myPoints[np.argmin(add)]
+    myPointsNew[3] =myPoints[np.argmax(add)]
+    diff = np.diff(myPoints, axis=1)
+    myPointsNew[1] =myPoints[np.argmin(diff)]
+    myPointsNew[2] = myPoints[np.argmax(diff)]
+    
+    return myPointsNew   
+ 
+def drawRectangle(img,biggest,thickness):
+    cv2.line(img, (biggest[0][0][0], biggest[0][0][1]), (biggest[1][0][0], biggest[1][0][1]), (0, 155, 0), thickness)
+    cv2.line(img, (biggest[0][0][0], biggest[0][0][1]), (biggest[2][0][0], biggest[2][0][1]), (0, 155, 0), thickness)
+    cv2.line(img, (biggest[3][0][0], biggest[3][0][1]), (biggest[2][0][0], biggest[2][0][1]), (0, 155, 0), thickness)
+    cv2.line(img, (biggest[3][0][0], biggest[3][0][1]), (biggest[1][0][0], biggest[1][0][1]), (0, 155, 0), thickness)
+ 
+    return img
+
 ########################################################################
 webCamFeed = False  # set to false if no webcam available
 pathImage = "Images\\image004.jpg"
@@ -50,15 +93,27 @@ while True:
     # CONVERT IMAGE TO GRAY SCALE
     imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     imgBlur = cv2.GaussianBlur(imgGray, (5, 5), 1)  # ADD GAUSSIAN BLUR
-    # thres = valTrackbars()  # GET TRACK BAR VALUES FOR THRESHOLDS
-    imgCanny = cv2.Canny(imgBlur, 150, 100) #thres[0], thres[1])  # APPLY CANNY BLUR
+    thres = value_trackbars()  # GET TRACK BAR VALUES FOR THRESHOLDS
+    imgCanny = cv2.Canny(imgBlur, thres[0], thres[1]) #thres[0], thres[1])  # APPLY CANNY BLUR
     kernel = np.ones((5, 5))
     imgDial = cv2.dilate(imgCanny, kernel, iterations=2)  # APPLY DILATION
-    imgThreshold = cv2.erode(imgDial, kernel, iterations=1)  # APPLY EROSION
-    
+    imgThreshold = cv2.erode(imgDial, kernel, iterations=1)  # APPLY EROSION 
+
     imgContours = img.copy()
     contours, hierarchy = cv2.findContours(imgThreshold, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cv2.drawContours(imgThreshold, contours, -1, (255, 0, 0), 10)
+    
+    biggestContour(contours)
+    biggest, max_area = biggestContour(contours)
+    reorder(biggest)
+    drawRectangle(img, biggest, 10)
+    
+    pts1 = np.float32(biggest)
+    pts2 = np.float32([[0, 0], [widthImg, 0], [0, heightImg], [widthImg, heightImg]])
+    matrix = cv2.getPerspectiveTransform(pts1, pts2)
+    imgWarpColored = cv2.warpPerspective(img, matrix, (widthImg, heightImg))
+
+
 
     cv2.imshow("1. Original", img)
     cv2.imshow("2. Grayscale", imgGray)
