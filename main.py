@@ -229,7 +229,7 @@ while True:
                     #get the current time and date
                     timestamp = datetime.now()
                     #put the timestamp on warped image as a string
-                    cv2.putText(imgWarpColored, str(timestamp), (300, 450), cv2.FONT_HERSHEY_PLAIN, 3, (0, 0, 0), 5)
+                    cv2.putText(imgWarpColored, str(timestamp), (45, 450), cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 0), 5)
 
                     #then break out of loop
                     break
