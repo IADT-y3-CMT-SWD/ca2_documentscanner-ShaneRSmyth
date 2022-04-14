@@ -49,7 +49,7 @@ def reorder(myPoints):
     myPoints = myPoints.reshape((4, 2))
     myPointsNew = np.zeros((4, 1, 2), dtype=np.int32)
     add = myPoints.sum(1)
- 
+
     myPointsNew[0] = myPoints[np.argmin(add)]
     myPointsNew[3] =myPoints[np.argmax(add)]
     diff = np.diff(myPoints, axis=1)
@@ -103,16 +103,17 @@ while True:
     contours, hierarchy = cv2.findContours(imgThreshold, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cv2.drawContours(imgThreshold, contours, -1, (255, 0, 0), 10)
     
-    biggestContour(contours)
     biggest, max_area = biggestContour(contours)
-    reorder(biggest)
-    drawRectangle(img, biggest, 10)
-    
+
     pts1 = np.float32(biggest)
     pts2 = np.float32([[0, 0], [widthImg, 0], [0, heightImg], [widthImg, heightImg]])
     matrix = cv2.getPerspectiveTransform(pts1, pts2)
     imgWarpColored = cv2.warpPerspective(img, matrix, (widthImg, heightImg))
 
+    biggestContour(contours)
+    reorder(biggest)
+    myPointsNew = reorder(biggest)
+    drawRectangle(imgContours, myPointsNew, 10)
 
 
     cv2.imshow("1. Original", img)
@@ -123,7 +124,7 @@ while True:
     cv2.imshow("6. Treshold", imgThreshold)
     cv2.imshow("7. imgContours", imgContours)
 
-    imgOutput = imgCanny
+    # imgOutput = imgCanny
 
     # Press x  on keyboard to  exit
     # Close and break the loop after pressing "x" key
