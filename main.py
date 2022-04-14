@@ -104,16 +104,16 @@ while True:
     cv2.drawContours(imgThreshold, contours, -1, (255, 0, 0), 10)
     
     biggest, max_area = biggestContour(contours)
-
-    pts1 = np.float32(biggest)
-    pts2 = np.float32([[0, 0], [widthImg, 0], [0, heightImg], [widthImg, heightImg]])
-    matrix = cv2.getPerspectiveTransform(pts1, pts2)
-    imgWarpColored = cv2.warpPerspective(img, matrix, (widthImg, heightImg))
-
     biggestContour(contours)
     reorder(biggest)
     myPointsNew = reorder(biggest)
     drawRectangle(imgContours, myPointsNew, 10)
+
+
+    pts1 = np.float32(myPointsNew)
+    pts2 = np.float32([[0, 0], [widthImg, 0], [0, heightImg], [widthImg, heightImg]])
+    matrix = cv2.getPerspectiveTransform(pts1, pts2)
+    imgWarpColored = cv2.warpPerspective(imgContours, matrix, (widthImg, heightImg))
 
 
     cv2.imshow("1. Original", img)
@@ -123,6 +123,8 @@ while True:
     cv2.imshow("5. Dilate", imgDial)
     cv2.imshow("6. Treshold", imgThreshold)
     cv2.imshow("7. imgContours", imgContours)
+    # cv2.imshow("8. imgBigContours", )
+    cv2.imshow("9. imgWarpColored", imgWarpColored)
 
     # imgOutput = imgCanny
 
@@ -135,7 +137,7 @@ while True:
     if cv2.waitKey(1) & 0xFF == ord('s'):
         print("saving")
         # save image to folder using cv2.imwrite()
-        cv2.imwrite("Scanned/myImage"+str(count)+".jpg", imgContours)
+        cv2.imwrite("Scanned/myImage"+str(count)+".jpg", imgWarpColored)
         cv2.waitKey(300)
         count += 1
 
