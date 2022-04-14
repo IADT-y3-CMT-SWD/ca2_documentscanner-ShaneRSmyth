@@ -4,6 +4,7 @@ libraries
 
 import cv2
 import numpy as np
+from datetime import datetime
 
 
 def nothing(x):
@@ -57,7 +58,7 @@ def reorder(myPoints):
     myPointsNew[2] = myPoints[np.argmax(diff)]
     
     return myPointsNew   
- 
+
 def drawRectangle(img,biggest,thickness):
     cv2.line(img, (biggest[0][0][0], biggest[0][0][1]), (biggest[1][0][0], biggest[1][0][1]), (0, 155, 0), thickness)
     cv2.line(img, (biggest[0][0][0], biggest[0][0][1]), (biggest[2][0][0], biggest[2][0][1]), (0, 155, 0), thickness)
@@ -104,17 +105,14 @@ while True:
     cv2.drawContours(imgThreshold, contours, -1, (255, 0, 0), 10)
     
     biggest, max_area = biggestContour(contours)
-    biggestContour(contours)
-    reorder(biggest)
     myPointsNew = reorder(biggest)
-    drawRectangle(imgContours, myPointsNew, 10)
+    draw = drawRectangle(imgContours, myPointsNew, 10)
 
 
     pts1 = np.float32(myPointsNew)
     pts2 = np.float32([[0, 0], [widthImg, 0], [0, heightImg], [widthImg, heightImg]])
     matrix = cv2.getPerspectiveTransform(pts1, pts2)
     imgWarpColored = cv2.warpPerspective(imgContours, matrix, (widthImg, heightImg))
-
 
     cv2.imshow("1. Original", img)
     cv2.imshow("2. Grayscale", imgGray)
@@ -135,7 +133,38 @@ while True:
 
     # SAVE IMAGE WHEN 's' key is pressed
     if cv2.waitKey(1) & 0xFF == ord('s'):
+        # print("saving")
+
+        while True:
+            watermarkOption = input("Do you want to add a watermark to the image? y/n ")
+            while True:
+                if watermarkOption == "y":
+                    print("Adding watermark to image.")
+                    watermark = "CMTY3"
+                    cv2.putText(imgWarpColored, watermark, (45, 375), cv2.FONT_HERSHEY_PLAIN, 10, (0, 0, 0), 25)
+
+                    break
+                
+                elif watermarkOption == "n":
+
+                    break
+            
+            timestampOption = input("Do you want to add a timestamp to the image? y/n ")
+            while True:
+                if timestampOption == "y":
+                    print("Adding timestamp to image.")
+                    timestamp = datetime.now()
+                    cv2.putText(imgWarpColored, str(timestamp), (65, 375), cv2.FONT_HERSHEY_PLAIN, 10, (0, 0, 0), 25)
+
+                    break
+
+                elif timestampOption == "n":
+                    
+                    break
+            break
+
         print("saving")
+                    
         # save image to folder using cv2.imwrite()
         cv2.imwrite("Scanned/myImage"+str(count)+".jpg", imgWarpColored)
         cv2.waitKey(300)
